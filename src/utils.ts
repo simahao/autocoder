@@ -1,4 +1,5 @@
 import { parse } from 'java-ast';
+import * as vscode from 'vscode';
 import { Field, JavaClass } from './javaClass';
 export class Utils {
     public static lowerFirstChar(field: string): string {
@@ -105,11 +106,11 @@ class AAA {\
                 console.log('parse java class error!');
                 return Promise.reject('parse java class error!');
             }
-            if (JavaClass.length === 0) {
+            if (classes.length === 0) {
                 console.log('javaClass.length == 0');
-                // vscode.window.showErrorMessage('there is not java class in editor');
+                vscode.window.showErrorMessage('there is not java class in editor');
                 return Promise.reject('there is not java class in editor');
-            } else if (JavaClass.length === 1) {
+            } else if (classes.length === 1) {
                 return classes[0];
             } else {
                 // let clazzes: vscode.QuickPickItem[] = [];
