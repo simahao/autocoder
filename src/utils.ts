@@ -81,15 +81,15 @@ class AAA {\
                                     }
                                 });
                                 const fieldType = classBodyDeclaration
-                                                        .memberDeclaration()!
-                                                        .fieldDeclaration()!
-                                                        .typeType().text;
+                                                    .memberDeclaration()!
+                                                    .fieldDeclaration()!
+                                                    .typeType().text;
                                 const fieldName = classBodyDeclaration
-                                                        .memberDeclaration()!
-                                                        .fieldDeclaration()!
-                                                        .variableDeclarators()!
-                                                        .variableDeclarator()[0]!
-                                                        .variableDeclaratorId().text;
+                                                    .memberDeclaration()!
+                                                    .fieldDeclaration()!
+                                                    .variableDeclarators()!
+                                                    .variableDeclarator()[0]!
+                                                    .variableDeclaratorId().text;
                                 if (!isStatic) {
                                     fields.push(new Field(fieldType, fieldName, isFinal, isInitedFinal, finalValue, isStatic));
                                 }
@@ -98,14 +98,13 @@ class AAA {\
                     } catch(err) {
                         console.log(err);
                     }
-                    // console.log(fields);
                     classes.push(new JavaClass(className, fields, methods));
-                    console.log(classes);
                 });
             } catch(err) {
                 console.log('parse java class error!');
                 return Promise.reject('parse java class error!');
             }
+            console.log(classes);
             if (classes.length === 0) {
                 console.log('javaClass.length == 0');
                 vscode.window.showErrorMessage('there is not java class in editor');
@@ -113,27 +112,27 @@ class AAA {\
             } else if (classes.length === 1) {
                 return classes[0];
             } else {
-                // let clazzes: vscode.QuickPickItem[] = [];
-                // classes.forEach(clazz => {
-                //     clazzes.push({
-                //         label: clazz.getClassName()
-                //     });
-                // });
-                // let pickName = await vscode.window.showQuickPick(clazzes, {
-                //     canPickMany: false,
-                //     placeHolder: 'please select one class'
-                // });
-                // classes.forEach(clazz => {
-                //     if (pickName && clazz.getClassName() === pickName.label) {
-                //         return clazz;
-                //     }
-                // });
-                // vscode.window.showErrorMessage('autocoder error!');
+                let clazzes: vscode.QuickPickItem[] = [];
+                classes.forEach(clazz => {
+                    clazzes.push({
+                        label: clazz.getClassName()
+                    });
+                });
+                let pickName = await vscode.window.showQuickPick(clazzes, {
+                    canPickMany: false,
+                    placeHolder: 'please select one class'
+                });
+                classes.forEach(clazz => {
+                    if (pickName && clazz.getClassName() === pickName.label) {
+                        return clazz;
+                    }
+                });
+                vscode.window.showErrorMessage('autocoder error!');
                 return Promise.reject('autocoder error');
             }
         } else {
             console.log('actived editor have not any text to parse!');
-            // vscode.window.showErrorMessage('actived editor have not any text to parse!');
+            vscode.window.showErrorMessage('actived editor have not any text to parse!');
             return Promise.reject('actived editor have not any text to parse!');
         }
     }
