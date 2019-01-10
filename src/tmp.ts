@@ -1,18 +1,20 @@
-let deck = {
-    suits: ["hearts", "spades", "clubs", "diamonds"],
-    cards: Array(52),
-    createCardPicker: function() {
-        // NOTE: the line below is now an arrow function, allowing us to capture 'this' right here
-        return () => {
-            let pickedCard = Math.floor(Math.random() * 52);
-            let pickedSuit = Math.floor(pickedCard / 13);
-
-            return {suit: this.suits[pickedSuit], card: pickedCard % 13};
-        }
-    }
+async function async1(){
+    console.log('async1 start')
+    await async2()
+    console.log('async1 end')
 }
-
-let cardPicker = deck.createCardPicker();
-let pickedCard = cardPicker();
-
-console.log("card: " + pickedCard.card + " of " + pickedCard.suit);
+async function async2(){
+    console.log('async2')
+}
+console.log('script start')
+setTimeout(function(){
+    console.log('setTimeout') 
+},0)  
+async1();
+new Promise(function(resolve){
+    console.log('promise1')
+    resolve();
+}).then(function(){
+    console.log('promise2')
+})
+console.log('script end')

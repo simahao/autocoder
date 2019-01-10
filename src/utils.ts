@@ -122,11 +122,11 @@ class AAA {\
                     canPickMany: false,
                     placeHolder: 'please select one class'
                 });
-                classes.forEach(clazz => {
-                    if (pickName && clazz.getClassName() === pickName.label) {
-                        return clazz;
+                for (let i = 0; i < classes.length; i++) {
+                    if (pickName && classes[i].getClassName() === pickName.label) {
+                        return classes[i];
                     }
-                });
+                }
                 vscode.window.showErrorMessage('autocoder error!');
                 return Promise.reject('autocoder error');
             }
