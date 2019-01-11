@@ -8,27 +8,27 @@ export class Utils {
     public static upperFirstChar(field: string): string {
         return field.charAt(0).toUpperCase() + field.slice(1);
     }
-    public static async parseClasses(text?: string): Promise<JavaClass> {
+    public static async parseClasses(text?: vscode.TextEditor): Promise<JavaClass> {
         let classes: JavaClass[] = [];
-        let javaText = 'package test; \
-public class Value {\
-    Value() {} \
-    private final long aaaa = 5L;\
-    private long clientId;\
-    private Integer num;\
-    private final String orderNo = \'1\';\
-    private String matchTime;\
-    public void fun() {}\
-} \
-class AAA {\
-    private long two;\
-    public void fun() {}\
-}\
-';
+//         let javaText = 'package test; \
+// public class Value {\
+//     Value() {} \
+//     private final long aaaa = 5L;\
+//     private long clientId;\
+//     private Integer num;\
+//     private final String orderNo = \'1\';\
+//     private String matchTime;\
+//     public void fun() {}\
+// } \
+// class AAA {\
+//     private long two;\
+//     public void fun() {}\
+// }\
+// ';
         if (text) {
             let parseCode;
             try {
-                parseCode = parse(javaText);
+                parseCode = parse(text.document.getText());
                 parseCode.typeDeclaration().forEach(type => {
                     let className: string = '';
                     // let hasConstructor: boolean = false;

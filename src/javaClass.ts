@@ -34,13 +34,16 @@ export class Field {
     private finalValue: any;
     private staticField: boolean;
     private primitive: boolean;
-    constructor(fieldType: string, fieldName: string, finalField: boolean, initedfinalField: boolean, finalValue: any, staticField: boolean) {
+    //boolean type
+    private priBool: boolean;
+    constructor(fieldType: string, fieldName: string, finalField: boolean, initedfinalField: boolean, finalValue: any, staticField: boolean, priBool: boolean) {
         this.fieldType = fieldType;
         this.fieldName = fieldName;
         this.finalField = finalField;
         this.initedFinalField = initedfinalField;
         this.finalValue = finalValue;
         this.staticField = staticField;
+        this.priBool = fieldType ? (['boolean'].indexOf(this.fieldType) !== -1) : false; 
         this.primitive = fieldType ? (['short', 'int', 'long', 'float', 'double', 'char', 'boolean', 'byte'].indexOf(this.fieldType) !== -1) : false;
     }
     setFieldType(value: string) {
@@ -84,5 +87,11 @@ export class Field {
     }
     isPrimitive(): boolean {
         return this.primitive;
+    }
+    isPriBool(): boolean {
+        return this.priBool;
+    }
+    setPriBool(value: boolean) {
+        this.priBool = value;
     }
 }
