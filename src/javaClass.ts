@@ -36,7 +36,7 @@ export class Field {
     private primitive: boolean;
     //boolean type
     private priBool: boolean;
-    constructor(fieldType: string, fieldName: string, finalField: boolean, initedfinalField: boolean, finalValue: any, staticField: boolean, priBool: boolean) {
+    constructor(fieldType: string, fieldName: string, finalField: boolean, initedfinalField: boolean, finalValue: any, staticField: boolean) {
         this.fieldType = fieldType;
         this.fieldName = fieldName;
         this.finalField = finalField;

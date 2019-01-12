@@ -10,14 +10,24 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.autocoder"
+    "onCommand:extension.autoCoderAll",
+    "onCommand:extension.autoCoderSetAndGet",
+    "onCommand:extension.autoCoderBuilder"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.autocoder",
-        "title": "auto coder"
+        "command": "extension.autoCoderAll",
+        "title": "autoCoder: generate All"
+      },
+      {
+        "command": "extension.autoCoderSetAndGet",
+        "title": "autoCoder: generate setter and getter"
+      },
+      {
+        "command": "extension.autoCoderBuilder",
+        "title": "autoCoder: generate builder"
       }
     ]
   },
