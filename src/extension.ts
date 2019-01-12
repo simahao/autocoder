@@ -31,10 +31,10 @@ export function activate(context: vscode.ExtensionContext) {
         Utils.parseClasses(editor)
             .then(javaClass => {
                 let snippet = '';
-                snippet += addSetterGetter(javaClass);
                 snippet += addToString(javaClass);
+                snippet += addSetterGetter(javaClass);
                 if (snippet !== '') {
-                    addSnippet(snippet, editor, javaClass);
+                    addSnippet(snippet, editor, javaClass, "toString");
                 }
             }).catch(err => {
                 console.log(err);
@@ -43,12 +43,30 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     let builder = vscode.commands.registerCommand('extension.autoCoderBuilder', () => {
+        let editor = vscode.window.activeTextEditor!;
+        Utils.parseClasses(editor)
+            .then(javaClass => {
+                let snippet = '';
+                snippet += addToString(javaClass);
+                snippet += addSetterGetter(javaClass, false);
+                snippet += addBuilder(javaClass);
+                if (snippet !== '') {
+                    addSnippet(snippet, editor, javaClass, "toString");
+                }
+            }).catch(err => {
+                console.log(err);
+            });
 
     });
     context.subscriptions.push(setAndGet);
     context.subscriptions.push(all);
     context.subscriptions.push(builder);
 }
+/**
+ * 
+ * @param javaClass 
+ * @param editor 
+ */
 function findPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
     let lineNum = editor.selection.end.line;
     let lastField = javaClass.getFields()[javaClass.getFields().length - 1].getFieldName();
@@ -68,7 +86,41 @@ function findPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
     }
     return lineNum + 1;
 }
-function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaClass): void {
+/**
+ * 
+ * @param snippet 
+ * @param editor 
+ * @param javaClass 
+ * @param delFuncName delete this method before regenerate
+ */
+function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaClass, delFuncName?: string): void {
+    if (delFuncName !== undefined && delFuncName === "toString") {
+        let text = editor.document.getText();
+        let patStart = new RegExp(/^( )*public( )+String( )+toString/);
+        let patEnd = new RegExp(/^( )*}/);
+        let start: number = 0;
+        let end: number = 0;
+        let lines = text.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            if (start === 0) {
+                if (lines[i].search(patStart) !== -1) {
+                    start = i;
+                    continue;
+                }
+            }
+            if (start > 0) {
+                if (lines[i].search(patEnd) !== -1) {
+                    end = i + 1;
+                    break;
+                }
+            }
+        }
+        if (start > 0) {
+            editor.edit(editBuilder => {
+                editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
+            });
+        }
+    }
     editor.insertSnippet(new vscode.SnippetString(snippet), new vscode.Position(findPos(javaClass, editor), 0));
 }
 function indent(): string {
@@ -83,11 +135,17 @@ function indent(): string {
         return '    ';
     }
 }
-function addSetterGetter(javaClass: JavaClass): string {
+
+/**
+ * 
+ * @param javaClass JavaClass 
+ * @param addSet boolean if addSet is false, ignore setXxx method
+ */
+function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
     let ret = '';
     javaClass.getFields().forEach(field => {
         //public void setXxx(String value)
-        if (!field.isFinalField()) {
+        if (addSet && !field.isFinalField()) {
             if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
                 ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
 {\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}`;
@@ -110,28 +168,50 @@ function addSetterGetter(javaClass: JavaClass): string {
     ret += "\n";
     return ret;
 }
-/*
-    public String toString() {
-        return "{" +
-            " tradeDate='" + getTradeDate() + "'" +
-            ", price='" + getPrice() + "'" +
-            "}";
-    }
-*/
+/**
+ * 
+ * @param javaClass 
+ */
 function addToString(javaClass: JavaClass): string {
     let ret = '';
     ret = `${indent()}public String toString() {\n${indent()}${indent()}return "{" +`;
 
     javaClass.getFields().forEach(field => {
         if (field.getFieldType() === "String") {
-            ret += `\n${indent()}${indent()}${indent()}",${field.getFieldName()}='" + this.${field.getFieldName()} + "'" +`;
+            ret += `\n${indent()}${indent()}${indent()}",${field.getFieldName()}='" + get${Utils.upperFirstChar(field.getFieldName())}() + "'" +`;
         } else {
-            ret += `\n${indent()}${indent()}${indent()}",${field.getFieldName()}=" + this.${field.getFieldName()} +`;
+            if (field.isPriBool()) {
+                ret += `\n${indent()}${indent()}${indent()}",${field.getFieldName()}=" + is${Utils.upperFirstChar(field.getFieldName())}() +`;
+            } else {
+                ret += `\n${indent()}${indent()}${indent()}",${field.getFieldName()}=" + get${Utils.upperFirstChar(field.getFieldName())}() +`;
+            }
         }
     });
     ret += `\n${indent()}${indent()}${indent()}"}";\n${indent()}}\n`;
     //replace first ","
     return ret.replace(',', '');
+}
+/**
+ * 
+ * @param javaClass 
+ */
+function addBuilder(javaClass: JavaClass): string {
+    let ret = '';
+    ret += `\n${indent()}public static class Builder {\n\
+${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaClass.getClassName()}();\n`;
+    javaClass.getFields().forEach(field => {
+        if (!field.isFinalField()) {
+            ret += `${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
+${indent()}${indent()}${indent()}buildObj.${field.getFieldName()} = ${field.getFieldName()};\n\
+${indent()}${indent()}${indent()}return this;\n\
+${indent()}${indent()}}\n`;
+        }
+    });
+    ret += `${indent()}${indent()}public ${javaClass.getClassName()} build() {\n\
+${indent()}${indent()}${indent()}return buildObj;\n\
+${indent()}${indent()}}\n\
+${indent()}}\n`;
+    return ret;
 }
 // this method is called when your extension is deactivated
 export function deactivate() {}
