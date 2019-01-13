@@ -10,21 +10,6 @@ export class Utils {
     }
     public static async parseClasses(text?: vscode.TextEditor): Promise<JavaClass> {
         let classes: JavaClass[] = [];
-//         let javaText = 'package test; \
-// public class Value {\
-//     Value() {} \
-//     private final long aaaa = 5L;\
-//     private long clientId;\
-//     private Integer num;\
-//     private final String orderNo = \'1\';\
-//     private String matchTime;\
-//     public void fun() {}\
-// } \
-// class AAA {\
-//     private long two;\
-//     public void fun() {}\
-// }\
-// ';
         if (text) {
             let parseCode;
             try {
@@ -127,8 +112,8 @@ export class Utils {
                         return classes[i];
                     }
                 }
-                vscode.window.showErrorMessage('autocoder error!');
-                return Promise.reject('autocoder error');
+                vscode.window.showInformationMessage('u don\'t pick any class');
+                return Promise.reject('u don\'t pick any class');
             }
         } else {
             console.log('actived editor have not any text to parse!');

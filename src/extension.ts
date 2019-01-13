@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
-    let setAndGet = vscode.commands.registerCommand('extension.autoCoderSetAndGet', () => {
+    let setAndGet = vscode.commands.registerCommand('extension.AutoCoderSetAndGet', () => {
         // The code you place here will be executed every time your command is executed
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
             });
     });
 
-    let all = vscode.commands.registerCommand('extension.autoCoderAll', () => {
+    let all = vscode.commands.registerCommand('extension.AutoCoderAll', () => {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     });
 
-    let builder = vscode.commands.registerCommand('extension.autoCoderBuilder', () => {
+    let builder = vscode.commands.registerCommand('extension.AutoCoderBuilder', () => {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
@@ -123,16 +123,27 @@ function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaC
     }
     editor.insertSnippet(new vscode.SnippetString(snippet), new vscode.Position(findPos(javaClass, editor), 0));
 }
+/**
+ * @returns tab or space
+ */
 function indent(): string {
     if (vscode.workspace.getConfiguration('autocoder').has('indent')) {
-        let ret = vscode.workspace.getConfiguration('autocoder').get('indent');
-        if (ret === "tab") {
+        let indent = vscode.workspace.getConfiguration('autocoder').get('indent');
+        if (indent === "tab") {
             return '\t';
         } else {
+            if (vscode.workspace.getConfiguration('autocoder').has('space')) {
+                let space = vscode.workspace.getConfiguration('autocoder').get('space')!;
+                let ret = '';
+                for (let i = 0; i < space; i++) {
+                    ret += ' ';
+                }
+                return ret;
+            }
             return '    ';
         }
     } else {
-        return '    ';
+        return '\t';
     }
 }
 

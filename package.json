@@ -10,24 +10,62 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.autoCoderAll",
-    "onCommand:extension.autoCoderSetAndGet",
-    "onCommand:extension.autoCoderBuilder"
+    "onCommand:extension.AutoCoderAll",
+    "onCommand:extension.AutoCoderSetAndGet",
+    "onCommand:extension.AutoCoderBuilder"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.autoCoderAll",
-        "title": "autoCoder: generate All"
+        "command": "extension.AutoCoderAll",
+        "title": "AutoCoder: Generate All"
       },
       {
-        "command": "extension.autoCoderSetAndGet",
-        "title": "autoCoder: generate setter and getter"
+        "command": "extension.AutoCoderSetAndGet",
+        "title": "AutoCoder: Generate Setter And Getter"
       },
       {
-        "command": "extension.autoCoderBuilder",
-        "title": "autoCoder: generate builder"
+        "command": "extension.AutoCoderBuilder",
+        "title": "AutoCoder: Generate Builder"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId == java",
+          "command": "extension.AutoCoderAll",
+          "group": "YourGroup@1"
+        },
+        {
+          "when": "resourceLangId == java",
+          "command": "extension.AutoCoderSetAndGet",
+          "group": "YourGroup@2"
+        },
+        {
+          "when": "resourceLangId == java",
+          "command": "extension.AutoCoderBuilder",
+          "group": "YourGroup@3"
+        }
+      ]
+    },
+    "configuration": [
+      {
+        "title": "AutoCoder Configuration",
+        "properties": {
+          "autocoder.indent": {
+            "type": "string",
+            "default": "tab",
+            "enum": ["tab", "space"],
+            "description": "insert tab or space for format"
+          },
+          "autocoder.space": {
+            "type": "integer",
+            "default": 4,
+            "enum": [2, 4, 8],
+            "description": "if indent is space, u can set space for format,eg 4"
+          }
+        }
       }
     ]
   },
