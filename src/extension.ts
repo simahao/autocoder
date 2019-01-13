@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { JavaClass } from './javaClass';
+import { JavaClass, mode } from './javaClass';
 import { Utils } from './utils';
 
 // this method is called when your extension is activated
@@ -16,10 +16,16 @@ export function activate(context: vscode.ExtensionContext) {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
-                let snippet = '';
-                snippet += addSetterGetter(javaClass);
-                if (snippet !== '') {
-                    addSnippet(snippet, editor, javaClass);
+                if (javaClass.getClassMode() === mode.builder) {
+                    vscode.window.showWarningMessage('this java bean is under builder mode, not support generate setter and getter, you can delete code except fields.');
+                } else if (javaClass.getClassMode() === mode.notSupport) {
+                    vscode.window.showErrorMessage('not support,please file an issue.');
+                } else {
+                    let snippet = '';
+                    snippet += addSetterGetter(javaClass);
+                    if (snippet !== '') {
+                        addSnippet(snippet, editor, javaClass);
+                    }
                 }
             }).catch(err => {
                 console.log(err);
@@ -30,11 +36,17 @@ export function activate(context: vscode.ExtensionContext) {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
-                let snippet = '';
-                snippet += addToString(javaClass);
-                snippet += addSetterGetter(javaClass);
-                if (snippet !== '') {
-                    addSnippet(snippet, editor, javaClass, "toString");
+                if (javaClass.getClassMode() === mode.builder) {
+                    vscode.window.showWarningMessage('this java bean is under builder mode, not support generate all, you can delete code except fields.');
+                } else if (javaClass.getClassMode() === mode.notSupport) {
+                    vscode.window.showErrorMessage('not support,please file an issue.');
+                } else {
+                    let snippet = '';
+                    snippet += addToString(javaClass);
+                    snippet += addSetterGetter(javaClass);
+                    if (snippet !== '') {
+                        addSnippet(snippet, editor, javaClass, "toString");
+                    }
                 }
             }).catch(err => {
                 console.log(err);
@@ -46,12 +58,18 @@ export function activate(context: vscode.ExtensionContext) {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
-                let snippet = '';
-                snippet += addToString(javaClass);
-                snippet += addSetterGetter(javaClass, false);
-                snippet += addBuilder(javaClass);
-                if (snippet !== '') {
-                    addSnippet(snippet, editor, javaClass, "toString");
+                if (javaClass.getClassMode() === mode.all || javaClass.getClassMode() === mode.setget) {
+                    vscode.window.showWarningMessage(`there are set,get,or toString methods in ${javaClass.getClassName()} class,you can delete code except fields.`);
+                } else if (javaClass.getClassMode() === mode.notSupport) {
+                    vscode.window.showErrorMessage('not support,please file an issue.');
+                } else {
+                    let snippet = '';
+                    snippet += addToString(javaClass);
+                    snippet += addSetterGetter(javaClass, false);
+                    snippet += addBuilder(javaClass);
+                    if (snippet !== '') {
+                        addSnippet(snippet, editor, javaClass, "toString");
+                    }
                 }
             }).catch(err => {
                 console.log(err);
@@ -72,7 +90,7 @@ function findPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
     let lastField = javaClass.getFields()[javaClass.getFields().length - 1].getFieldName();
     let lines: string[] = editor.document.getText().split("\n");
     let classLine: number = 0;
-    let pattern = new RegExp(javaClass.getClassName().concat("( |{)"));
+    let pattern = new RegExp(javaClass.getClassName().concat("[\t|( )]*{"));
     for (let i = 0; i < lines.length; i++) {
         if (lines[i].search(pattern) !== -1) {
             classLine = i;
@@ -80,12 +98,20 @@ function findPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
         }
     }
     for (let j = classLine; j < lines.length; j++) {
-        if (lines[j].indexOf(lastField) !== -1) {
+        //private long abc;
+        //private long abc = 
+        if (lines[j].search(new RegExp(lastField.concat("[\t|( )]*[=|;]"))) !== -1) {
             return j + 1;
         }
     }
     return lineNum + 1;
 }
+
+// function delSnippet(javaClass: JavaClass, editor: vscode.TextEditor, delFlag: string): void {
+//     if (delFlag === "toString") {
+
+//     }
+// }
 /**
  * 
  * @param snippet 
@@ -96,29 +122,43 @@ function findPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
 function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaClass, delFuncName?: string): void {
     if (delFuncName !== undefined && delFuncName === "toString") {
         let text = editor.document.getText();
-        let patStart = new RegExp(/^( )*public( )+String( )+toString/);
-        let patEnd = new RegExp(/^( )*}/);
+        let patStart = new RegExp(/^[\t|( )]*public( )+String( )+toString/);
+        let patEnd = new RegExp(/^[\t|( )]*}/);
+        let patClass = new RegExp(javaClass.getClassName().concat("( )*{"));
         let start: number = 0;
         let end: number = 0;
+        let classPos: number = 0;
         let lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
-            if (start === 0) {
-                if (lines[i].search(patStart) !== -1) {
-                    start = i;
-                    continue;
+            if (lines[i].search(patClass) === -1) {
+                continue;
+            } else {
+                classPos = i;
+                break;
+            }
+        }
+        if (classPos === 0) {
+            vscode.window.showErrorMessage('delete snippet error, please file an issue');
+            return;
+        } else {
+            for (let i = classPos; i < lines.length; i++) {
+                if (start === 0) {
+                    if (lines[i].search(patStart) !== -1) {
+                        start = i;
+                        continue;
+                    }
+                } else {
+                    if (lines[i].search(patEnd) !== -1) {
+                        end = i + 1;
+                        break;
+                    }
                 }
             }
             if (start > 0) {
-                if (lines[i].search(patEnd) !== -1) {
-                    end = i + 1;
-                    break;
-                }
+                editor.edit(editBuilder => {
+                    editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
+                });
             }
-        }
-        if (start > 0) {
-            editor.edit(editBuilder => {
-                editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
-            });
         }
     }
     editor.insertSnippet(new vscode.SnippetString(snippet), new vscode.Position(findPos(javaClass, editor), 0));
@@ -158,25 +198,25 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
         //public void setXxx(String value)
         if (addSet && !field.isFinalField()) {
             if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
-{\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}`;
+                ret += `${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
+{\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}\n`;
             }
         }
         //if type is boolean, get method is isXxx()
         if (field.isPriBool()) {
             //if isXxx() is not exist
             if (javaClass.getMethods().indexOf(`is${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `\n${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
-{\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}`;
+                ret += `${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
+{\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             }
         } else {
             if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `\n${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
-{\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}`;
+                ret += `${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
+{\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             }
         }
     });
-    ret += "\n";
+    // ret += "\n";
     return ret;
 }
 /**

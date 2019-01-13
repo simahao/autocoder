@@ -1,6 +1,6 @@
 import { parse } from 'java-ast';
 import * as vscode from 'vscode';
-import { Field, JavaClass } from './javaClass';
+import { Field, JavaClass, mode } from './javaClass';
 export class Utils {
     public static lowerFirstChar(field: string): string {
         return field.charAt(0).toLowerCase() + field.slice(1);
@@ -19,16 +19,27 @@ export class Utils {
                     // let hasConstructor: boolean = false;
                     let methods: string[] = [];
                     let fields: Field[] = []; 
+                    let classMode: number = mode.notSupport;
                     try {
                         className = type.classDeclaration()!.IDENTIFIER()!.text;
                         type.classDeclaration()!.classBody()!.classBodyDeclaration().forEach(classBodyDeclaration => {
+                            // try {
+                            //     if (classBodyDeclaration
+                            //         .memberDeclaration()!
+                            //         .constructorDeclaration()!
+                            //         .formalParameters()!
+                            //         .formalParameterList() === undefined) {
+                            //             // hasConstructor = true;
+                            //         }
+                            // } catch(err) {}
                             try {
                                 if (classBodyDeclaration
                                     .memberDeclaration()!
-                                    .constructorDeclaration()!
-                                    .formalParameters()!
-                                    .formalParameterList() === undefined) {
-                                        // hasConstructor = true;
+                                    .classDeclaration() !== undefined) {
+                                        let childClass = classBodyDeclaration.memberDeclaration()!.classDeclaration()!.IDENTIFIER()!.text;
+                                        if (classMode === mode.notSupport && childClass.search(/^Builder$/) !== -1) {
+                                            classMode = mode.builder;
+                                        }
                                     }
                             } catch(err) {}
                             try {
@@ -37,7 +48,6 @@ export class Utils {
                                                     .memberDeclaration()!
                                                     .methodDeclaration()!
                                                     .IDENTIFIER().text;
-                                    // console.log(methodName);
                                     methods.push(methodName);
                                 }
                             } catch(err) {}
@@ -83,13 +93,28 @@ export class Utils {
                     } catch(err) {
                         console.log(err);
                     }
-                    classes.push(new JavaClass(className, fields, methods));
+                    //if mode is not builder, program need judge
+                    if (classMode === mode.notSupport) {
+                        if (fields.length > 0 && methods.length === 0) {
+                            classMode = mode.init;
+                        } else if (methods.some(method => {
+                            return (method.search(/^toString$/) !== -1 ? true : false && method.indexOf("set") !== -1 ? true : false);
+                        })) {
+                            classMode = mode.all;
+                        } else if (methods.some(method => {
+                            return (method.search(/^toString$/) === -1 ? true : false && method.indexOf("set") !== -1 ? true : false);
+                        })) {
+                            classMode = mode.setget;
+                        }
+                    }
+                    console.log(className + ":" + classMode);
+                    classes.push(new JavaClass(className, fields, methods, classMode));
                 });
             } catch(err) {
                 console.log('parse java class error!');
                 return Promise.reject('parse java class error!');
             }
-            console.log(classes);
+            // console.log(classes);
             if (classes.length === 0) {
                 console.log('javaClass.length == 0');
                 vscode.window.showErrorMessage('there is not java class in editor');
