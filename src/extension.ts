@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
                     let snippet = '';
                     snippet += addToString(javaClass);
                     snippet += addSetterGetter(javaClass);
-                    if (snippet !== '' && delSnippet(editor, javaClass.getClassName(), "toString")) {
+                    if (snippet !== '' && delSnippet(editor, javaClass, "toString")) {
                         addSnippet(snippet, editor, javaClass);
                     }
                 }
@@ -65,10 +65,14 @@ export function activate(context: vscode.ExtensionContext) {
                 } else {
                     let snippet = '';
                     snippet += addToString(javaClass);
-                    snippet += addSetterGetter(javaClass, false);
                     snippet += addBuilder(javaClass);
-                    if (snippet !== '' && delSnippet(editor, javaClass.getClassName(), "toString") && delSnippet(editor, "builder")) {
-                        addSnippet(snippet, editor, javaClass);
+                    snippet += addSetterGetter(javaClass, false);
+                    if (snippet !== '') {
+                        delSnippet(editor, javaClass, "toString").then(editor => {
+                            delSnippet(editor, javaClass, "builder").then(editor => {
+                                addSnippet(snippet, editor, javaClass);
+                            });
+                        });
                     }
                 }
             }).catch(err => {
@@ -126,14 +130,18 @@ function getInsertPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
  * @param javaClass 
  * @param delFuncName 
  */
-function delSnippet(editor: vscode.TextEditor, javaClass: string, delFuncName?: string): boolean {
+async function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass, delFuncName: string): Promise<vscode.TextEditor> {
+    if (javaClass.getClassMode() === mode.init || javaClass.getClassMode() === mode.notSupport) {
+        return editor;
+    }
     let text = editor.document.getText();
     let lines = text.split('\n');
     let patStart: RegExp;
     let patEnd: RegExp;
+    let patComment: RegExp;
     let start: number = 0;
     let end: number = 0;
-    let classPos = getClassPos(javaClass, lines);
+    let classPos = getClassPos(javaClass.getClassName(), lines);
 
     if (classPos !== -1) {
         if (delFuncName !== undefined && delFuncName === "toString") {
@@ -152,9 +160,11 @@ function delSnippet(editor: vscode.TextEditor, javaClass: string, delFuncName?: 
                     }
                 }
             }
-        } else if (javaClass === "builder") {
+        } else if (delFuncName !== undefined && delFuncName === "builder") {
             let stack: string[] = [];
             patStart = new RegExp(/^(\t| )*public static class Builder/);
+            patComment = new RegExp(/(\/\*{1,2}[\s\S]*?\*\/|\/\/[\s\S]*?)/);
+
             for (let i = classPos; i < lines.length; i++) {
                 if (start === 0) {
                     if (lines[i].search(patStart) !== -1) {
@@ -163,6 +173,9 @@ function delSnippet(editor: vscode.TextEditor, javaClass: string, delFuncName?: 
                         continue;
                     }
                 } else {
+                    if (lines[i].search(patComment) !== -1) {
+                        continue;
+                    }
                     if (lines[i].indexOf("{") !== -1) {
                         stack.push("{");
                     } else if (lines[i].indexOf("}") !== -1) {
@@ -170,23 +183,21 @@ function delSnippet(editor: vscode.TextEditor, javaClass: string, delFuncName?: 
                     }
                     if (stack.length === 0) {
                         end = i + 1;
+                        break;
                     }
                 }
             }
         }
     } else {
         vscode.window.showErrorMessage('delete snippet error, can not find class position,please file an issue.');
-        return false;        
+        return Promise.reject('delete snippet error!');        
     }
     if (start > 0) {
         editor.edit(editBuilder => {
             editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
         });
-        return true;
-    } else { 
-        vscode.window.showErrorMessage('delete snippet error, can not find start position,please file an issue.');
-        return false;        
     }
+    return editor;
 }
 /**
  * 
@@ -282,7 +293,7 @@ function addToString(javaClass: JavaClass): string {
  */
 function addBuilder(javaClass: JavaClass): string {
     let ret = '';
-    ret += `\n${indent()}public static class Builder {\n\
+    ret += `${indent()}public static class Builder {\n\
 ${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaClass.getClassName()}();\n`;
 
     javaClass.getFields().forEach(field => {
