@@ -44,8 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
                     let snippet = '';
                     snippet += addToString(javaClass);
                     snippet += addSetterGetter(javaClass);
-                    if (snippet !== '') {
-                        addSnippet(snippet, editor, javaClass, "toString");
+                    if (snippet !== '' && delSnippet(editor, javaClass.getClassName(), "toString")) {
+                        addSnippet(snippet, editor, javaClass);
                     }
                 }
             }).catch(err => {
@@ -67,80 +67,78 @@ export function activate(context: vscode.ExtensionContext) {
                     snippet += addToString(javaClass);
                     snippet += addSetterGetter(javaClass, false);
                     snippet += addBuilder(javaClass);
-                    if (snippet !== '') {
-                        addSnippet(snippet, editor, javaClass, "toString");
+                    if (snippet !== '' && delSnippet(editor, javaClass.getClassName(), "toString") && delSnippet(editor, "builder")) {
+                        addSnippet(snippet, editor, javaClass);
                     }
                 }
             }).catch(err => {
                 console.log(err);
             });
-
     });
     context.subscriptions.push(setAndGet);
     context.subscriptions.push(all);
     context.subscriptions.push(builder);
 }
+
 /**
- * 
+ * find the class position
+ * @param javaClass string 
+ * @param lines string[] 
+ */
+function getClassPos(javaClass: string, lines: string[]): number {
+    let patClass = new RegExp("^(\t| )*.*".concat(javaClass).concat("(\t| )*{"));
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i].search(patClass) !== -1) {
+            return i;
+        }
+    }
+    return -1;
+}
+/**
+ * find position for insert snippet.
+ *  
  * @param javaClass 
  * @param editor 
  */
-function findPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
+function getInsertPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
+    //current cursor position,default value if can not get insert position
     let lineNum = editor.selection.end.line;
+
     let lastField = javaClass.getFields()[javaClass.getFields().length - 1].getFieldName();
     let lines: string[] = editor.document.getText().split("\n");
-    let classLine: number = 0;
-    let pattern = new RegExp(javaClass.getClassName().concat("[\t|( )]*{"));
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].search(pattern) !== -1) {
-            classLine = i;
-            break;
-        }
-    }
-    for (let j = classLine; j < lines.length; j++) {
-        //private long abc;
-        //private long abc = 
-        if (lines[j].search(new RegExp(lastField.concat("[\t|( )]*[=|;]"))) !== -1) {
-            return j + 1;
+    let classPos: number = getClassPos(javaClass.getClassName(), lines);
+    if (classPos !== -1) {
+        for (let i = classPos; i < lines.length; i++) {
+            //private long abc;
+            //private long abc = 
+            if (lines[i].search(new RegExp(lastField.concat("(\t| )*(=|;)"))) !== -1) {
+                return i + 1;
+            }
         }
     }
     return lineNum + 1;
 }
 
-// function delSnippet(javaClass: JavaClass, editor: vscode.TextEditor, delFlag: string): void {
-//     if (delFlag === "toString") {
-
-//     }
-// }
 /**
+ * delete toString under all and builder mode.
  * 
- * @param snippet 
  * @param editor 
  * @param javaClass 
- * @param delFuncName delete this method before regenerate
+ * @param delFuncName 
  */
-function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaClass, delFuncName?: string): void {
-    if (delFuncName !== undefined && delFuncName === "toString") {
-        let text = editor.document.getText();
-        let patStart = new RegExp(/^[\t|( )]*public( )+String( )+toString/);
-        let patEnd = new RegExp(/^[\t|( )]*}/);
-        let patClass = new RegExp(javaClass.getClassName().concat("( )*{"));
-        let start: number = 0;
-        let end: number = 0;
-        let classPos: number = 0;
-        let lines = text.split('\n');
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].search(patClass) === -1) {
-                continue;
-            } else {
-                classPos = i;
-                break;
-            }
-        }
-        if (classPos === 0) {
-            vscode.window.showErrorMessage('delete snippet error, please file an issue');
-            return;
-        } else {
+function delSnippet(editor: vscode.TextEditor, javaClass: string, delFuncName?: string): boolean {
+    let text = editor.document.getText();
+    let lines = text.split('\n');
+    let patStart: RegExp;
+    let patEnd: RegExp;
+    let start: number = 0;
+    let end: number = 0;
+    let classPos = getClassPos(javaClass, lines);
+
+    if (classPos !== -1) {
+        if (delFuncName !== undefined && delFuncName === "toString") {
+            patStart = new RegExp(/^(\t| )*public(\t| )+String(\t| )+toString/);
+            patEnd = new RegExp(/^(\t| )*}/);           
             for (let i = classPos; i < lines.length; i++) {
                 if (start === 0) {
                     if (lines[i].search(patStart) !== -1) {
@@ -154,14 +152,51 @@ function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaC
                     }
                 }
             }
-            if (start > 0) {
-                editor.edit(editBuilder => {
-                    editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
-                });
+        } else if (javaClass === "builder") {
+            let stack: string[] = [];
+            patStart = new RegExp(/^(\t| )*public static class Builder/);
+            for (let i = classPos; i < lines.length; i++) {
+                if (start === 0) {
+                    if (lines[i].search(patStart) !== -1) {
+                        start = i;
+                        stack.push("{");
+                        continue;
+                    }
+                } else {
+                    if (lines[i].indexOf("{") !== -1) {
+                        stack.push("{");
+                    } else if (lines[i].indexOf("}") !== -1) {
+                        stack.pop();
+                    }
+                    if (stack.length === 0) {
+                        end = i + 1;
+                    }
+                }
             }
         }
+    } else {
+        vscode.window.showErrorMessage('delete snippet error, can not find class position,please file an issue.');
+        return false;        
     }
-    editor.insertSnippet(new vscode.SnippetString(snippet), new vscode.Position(findPos(javaClass, editor), 0));
+    if (start > 0) {
+        editor.edit(editBuilder => {
+            editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
+        });
+        return true;
+    } else { 
+        vscode.window.showErrorMessage('delete snippet error, can not find start position,please file an issue.');
+        return false;        
+    }
+}
+/**
+ * 
+ * @param snippet 
+ * @param editor 
+ * @param javaClass 
+ * @param delFuncName delete this method before regenerate
+ */
+function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaClass, delFuncName?: string): void {
+    editor.insertSnippet(new vscode.SnippetString(snippet), new vscode.Position(getInsertPos(javaClass, editor), 0));
 }
 /**
  * @returns tab or space
@@ -216,7 +251,6 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
             }
         }
     });
-    // ret += "\n";
     return ret;
 }
 /**
@@ -250,6 +284,7 @@ function addBuilder(javaClass: JavaClass): string {
     let ret = '';
     ret += `\n${indent()}public static class Builder {\n\
 ${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaClass.getClassName()}();\n`;
+
     javaClass.getFields().forEach(field => {
         if (!field.isFinalField()) {
             ret += `${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
