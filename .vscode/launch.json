@@ -31,32 +31,6 @@
 				"${workspaceFolder}/out/test/**/*.js"
 			],
 			"preLaunchTask": "npm: watch"
-		},
-		{
-			"name": "mocha test",
-			"type": "node",
-			"request": "launch",
-			"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-			"stopOnEntry": false,
-			"cwd": "${workspaceRoot}",
-			"args": [
-				"-r",
-				"ts-node/register",
-				"--no-timeouts",
-				"--colors",
-				"${relativeFile}"
-			]
-		},
-		{
-			"name": "ts-node test",
-			"type": "node",
-			"request": "launch",
-			"program": "${workspaceRoot}/node_modules/ts-node/dist/bin.js",
-			"args": [
-				"${relativeFile}"
-			],
-			"cwd": "${workspaceFolder}",
-			"protocol": "inspector"
 		}
 	]
 }
