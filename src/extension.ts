@@ -67,12 +67,8 @@ export function activate(context: vscode.ExtensionContext) {
                     snippet += addToString(javaClass);
                     snippet += addBuilder(javaClass);
                     snippet += addSetterGetter(javaClass, false);
-                    if (snippet !== '') {
-                        delSnippet(editor, javaClass, "toString").then(editor => {
-                            delSnippet(editor, javaClass, "builder").then(editor => {
-                                addSnippet(snippet, editor, javaClass);
-                            });
-                        });
+                    if (snippet !== '' && delSnippet(editor, javaClass, "builder")) {
+                        addSnippet(snippet, editor, javaClass);
                     }
                 }
             }).catch(err => {
@@ -122,7 +118,6 @@ function getInsertPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
     }
     return lineNum + 1;
 }
-
 /**
  * delete toString under all and builder mode.
  * 
@@ -130,26 +125,28 @@ function getInsertPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
  * @param javaClass 
  * @param delFuncName 
  */
-async function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass, delFuncName: string): Promise<vscode.TextEditor> {
+function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass, delFuncName: string): boolean {
     if (javaClass.getClassMode() === mode.init || javaClass.getClassMode() === mode.notSupport) {
-        return editor;
+        return true;
     }
     let text = editor.document.getText();
     let lines = text.split('\n');
-    let patStart: RegExp;
+    let patStart1 = new RegExp(/^(\t| )*public(\t| )+String(\t| )+toString/);
     let patEnd: RegExp;
-    let patComment: RegExp;
+    let patComment = RegExp(/(\/\*{1,2}[\s\S]*?\*\/|\/\/[\s\S]*?)/);
     let start: number = 0;
     let end: number = 0;
     let classPos = getClassPos(javaClass.getClassName(), lines);
-
+            
     if (classPos !== -1) {
         if (delFuncName !== undefined && delFuncName === "toString") {
-            patStart = new RegExp(/^(\t| )*public(\t| )+String(\t| )+toString/);
             patEnd = new RegExp(/^(\t| )*}/);           
             for (let i = classPos; i < lines.length; i++) {
+                if (lines[i].search(patComment) !== -1) {
+                    continue;
+                }
                 if (start === 0) {
-                    if (lines[i].search(patStart) !== -1) {
+                    if (lines[i].search(patStart1) !== -1) {
                         start = i;
                         continue;
                     }
@@ -162,42 +159,51 @@ async function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass, delFu
             }
         } else if (delFuncName !== undefined && delFuncName === "builder") {
             let stack: string[] = [];
-            patStart = new RegExp(/^(\t| )*public static class Builder/);
-            patComment = new RegExp(/(\/\*{1,2}[\s\S]*?\*\/|\/\/[\s\S]*?)/);
-
+            let patStart2 = new RegExp(/^(\t| )*public static class Builder/);
+            let findBuilder = false;
             for (let i = classPos; i < lines.length; i++) {
+                if (lines[i].search(patComment) !== -1) {
+                    continue;
+                }
                 if (start === 0) {
-                    if (lines[i].search(patStart) !== -1) {
+                    //find toString
+                    if (lines[i].search(patStart1) !== -1) {
                         start = i;
-                        stack.push("{");
                         continue;
                     }
                 } else {
-                    if (lines[i].search(patComment) !== -1) {
-                        continue;
-                    }
-                    if (lines[i].indexOf("{") !== -1) {
-                        stack.push("{");
-                    } else if (lines[i].indexOf("}") !== -1) {
-                        stack.pop();
-                    }
-                    if (stack.length === 0) {
-                        end = i + 1;
-                        break;
+                    if (!findBuilder) {
+                        if (lines[i].search(patStart2) === -1) {
+                            continue;
+                        } else {
+                            findBuilder = true;
+                            stack.push("{");
+                        }
+                    } else {
+                        if (lines[i].indexOf("{") !== -1) {
+                            stack.push("{");
+                        } else if (lines[i].indexOf("}") !== -1) {
+                            stack.pop();
+                        }
+                        if (stack.length === 0) {
+                            end = i + 1;
+                            break;
+                        }
                     }
                 }
             }
         }
     } else {
         vscode.window.showErrorMessage('delete snippet error, can not find class position,please file an issue.');
-        return Promise.reject('delete snippet error!');        
+        return false;
+        // return Promise.reject('delete snippet error!');        
     }
     if (start > 0) {
         editor.edit(editBuilder => {
             editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
         });
     }
-    return editor;
+    return true;
 }
 /**
  * 
