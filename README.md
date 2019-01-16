@@ -16,10 +16,11 @@
 - Interesting feature:after run generate command,you can add new fields after the last field of java file, then you can run Generate command.
 ## ⚙️ Settings
 autocoder is so easy, only two settings you should take care.
-|Setting|Description|Type|Default Value|
-|---|---|---|---|
-|autocoder.indent|indent with tab or space|String|tab|
-|autocoder.space|if autocoder.indent=space, you can choose 2\|4\|8 space|Integer|4|
+
+| Setting          | Description                                             | Type    | Default Value |
+| ---------------- | ------------------------------------------------------- | ------- | ------------- |
+| autocoder.indent | indent with tab or space                                | String  | tab           |
+| autocoder.space  | if autocoder.indent=space, you can choose 2\|4\|8 space | Integer | 4             |
 ## 🤣 Restrictions
 - After run Generate Builder command, you can not run Generate All or Generate Setter and Getter again.You can delete code except java fields, run Generate All or Generate Setter and Getter again.
 - After run Generate All or Generate Setter and Getter command, you cann't run Generate Builder command.You can delete code except java fields, run Generate Builder again. 
