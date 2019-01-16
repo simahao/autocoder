@@ -1,3 +1,4 @@
+<h2 align="center"><img src="images/icon.png" height="128"><br>AutoCoder</h2>
 <p align="center"><strong>AutoCoder can generate setter,getter or builder code for java</strong></p>
 
 - [🌴 Usage](#%F0%9F%8C%B4-usage)
