@@ -11,12 +11,12 @@
 ![How to use](images/usages.gif)
 
 ## 💮Features
-- Generate All command:autocoder generate setter,getter and toString method for java bean.
-- Generate Setter And Getter command:autocoder generate setter and getter method for java bean.
-- Generate Builder command:autocoder generate builder code for java bean.
-- menu:If editorFocus is java file,right click mouse,you can run generate command with menu.
-- command:You can input autocoder keyword for triggering generate command.
-- Interesting feature:after run generate command,you can add new fields after the last field of java file, then you can run Generate command.
+- Generate All command: autocoder generate setter,getter and toString method for java bean.
+- Generate Setter And Getter command: autocoder generate setter and getter method for java bean.
+- Generate Builder command: autocoder generate builder code for java bean.
+- Menu: if editorFocus is java file,right click mouse,you can run generate command.
+- Command: you can input autocoder keyword for triggering generate command.
+- Interesting feature: after run generate command,you can add new fields after the last field of java file, then you can run same generate command again.
 
 ## ⚙️Settings
 autocoder is so easy, only two settings you should take care.
@@ -27,8 +27,8 @@ autocoder is so easy, only two settings you should take care.
 | autocoder.space  | if autocoder.indent=space, you can choose 2\|4\|8 space | Integer | 4             |
 
 ## 🤣Restrictions
-- After run Generate Builder command, you can not run Generate All or Generate Setter and Getter again.You can delete code except java fields, run Generate All or Generate Setter and Getter again.
-- After run Generate All or Generate Setter and Getter command, you cann't run Generate Builder command.You can delete code except java fields, run Generate Builder again. 
+- After run Generate Builder command, you cann't run Generate All or Generate Setter and Getter again.You can delete code except java fields, run Generate All or Generate Setter and Getter command again.
+- After run Generate All or Generate Setter and Getter command, you cann't run Generate Builder command.You can delete code except java fields, run Generate Builder command again. 
 - regenerate code will delete some code,you should save before running regenerate.
 
 ## 🐛Known Issues
