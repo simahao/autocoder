@@ -5,6 +5,7 @@
   "version": "0.0.1",
   "publisher": "simahao",
   "license": "MIT",
+  "icon": "image/icon.png",
   "keywords": [
     "java",
     "setter",
