@@ -1,65 +1,31 @@
-# autocoder README
+<p align="center"><strong>AutoCoder can generate setter,getter or builder code for java</strong></p>
 
-This is the README for your extension "autocoder". After writing up a brief description, we recommend including the following sections.
+- [🌴 Usage](#%F0%9F%8C%B4-usage)
+- [💮 Features](#%F0%9F%92%AE-features)
+- [⚙️ Settings](#%E2%9A%99%EF%B8%8F-settings)
+- [🤣 Restrictions](#%F0%9F%A4%A3-restrictions)
+- [🐛 Known Issues](#%F0%9F%90%9B-known-issues)
+## 🌴 Usage
+![How to use](images/usages.gif)
+## 💮 Features
+- Generate All command:autocoder generate setter,getter and toString method for java bean.
+- Generate Setter And Getter command:autocoder generate setter and getter method for java bean.
+- Generate Builder command:autocoder generate builder code for java bean.
+- menu:If editorFocus is java file,right click mouse,you can run generate command with menu.
+- command:You can input autocoder keyword for triggering generate command.
+- Interesting feature:after run generate command,you can add new fields after the last field of java file, then you can run Generate command.
+## ⚙️ Settings
+autocoder is so easy, only two settings you should take care.
+|Setting|Description|Type|Default Value|
+|---|---|---|---|
+|autocoder.indent|indent with tab or space|String|tab|
+|autocoder.space|if autocoder.indent=space, you can choose 2\|4\|8 space|Integer|4|
+## 🤣 Restrictions
+- After run Generate Builder command, you can not run Generate All or Generate Setter and Getter again.You can delete code except java fields, run Generate All or Generate Setter and Getter again.
+- After run Generate All or Generate Setter and Getter command, you cann't run Generate Builder command.You can delete code except java fields, run Generate Builder again. 
+- regenerate code will delete some code,you should save before running regenerate.
 
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+## 🐛 Known Issues
+please file issue at [github](https://github.com/simahao/autocoder/issues)
 
 **Enjoy!**
