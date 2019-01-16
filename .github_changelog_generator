@@ -1,6 +1,5 @@
 user=simahao
 project=autocoder
-base=chglog/CHANGELOG.base.md
 cache-file=./chglog/changelog.cache
 cache-log=./chglog/changelog.log
 bugs-label=**Fixed Bugs:**
