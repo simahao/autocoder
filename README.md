@@ -6,6 +6,8 @@
 - [⚙️Settings](#%E2%9A%99%EF%B8%8Fsettings)
 - [🤣Restrictions](#%F0%9F%A4%A3restrictions)
 - [🐛Known Issues](#%F0%9F%90%9Bknown-issues)
+- [:palm_tree:sbcde](#palmtreesbcde)
+
 
 ## 🌴Usage
 ![How to use](images/usages.gif)
@@ -33,5 +35,7 @@ autocoder is so easy, only two settings you should take care.
 
 ## 🐛Known Issues
 please file issue at [github](https://github.com/simahao/autocoder/issues)
+
+## :palm_tree:sbcde
 
 **Enjoy!**
