@@ -4,4 +4,4 @@ cache-file=./chglog/changelog.cache
 cache-log=./chglog/changelog.log
 bugs-label=**Fixed Bugs:**
 enhancement-label=**Enhancements:**
-since-tag=v0.0.1
+base=chglog/README.base.md
