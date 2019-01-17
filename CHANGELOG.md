@@ -1,7 +1,15 @@
 # Change Log
 
-[v0.0.1](https://github.com/simahao/autocoder/releases/tag/v0.0.1) (2019-01-16)
-## features
+## [v0.0.2](https://github.com/simahao/autocoder/release/tag/v0.0.2)
+
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.1...v0.0.2)
+
+**Fixed Bugs:**
+
+- format of readme in vscode is wrong [\#1](https://github.com/simahao/autocoder/issues/1)
+
+## [v0.0.1](https://github.com/simahao/autocoder/releases/tag/v0.0.1) (2019-01-16)
+### features
 - Generate All
 - Generate Setter And Getter
 - Generate Builder
