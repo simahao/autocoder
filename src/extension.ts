@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { JavaClass, mode } from './javaClass';
+import { JavaClass } from './javaClass';
 import { Utils } from './utils';
 
 // this method is called when your extension is activated
@@ -11,73 +11,66 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
-    let setAndGet = vscode.commands.registerCommand('extension.AutoCoderSetAndGet', () => {
-        // The code you place here will be executed every time your command is executed
-        let editor = vscode.window.activeTextEditor!;
-        Utils.parseClasses(editor)
-            .then(javaClass => {
-                if (javaClass.getClassMode() === mode.builder) {
-                    vscode.window.showWarningMessage('this java bean is under builder mode, not support generate setter and getter, you can delete code except fields.');
-                } else if (javaClass.getClassMode() === mode.notSupport) {
-                    vscode.window.showErrorMessage('not support,please file an issue.');
-                } else {
-                    let snippet = '';
-                    snippet += addSetterGetter(javaClass);
-                    if (snippet !== '') {
-                        addSnippet(snippet, editor, javaClass);
-                    }
-                }
-            }).catch(err => {
-                console.log(err);
-            });
-    });
-
-    let all = vscode.commands.registerCommand('extension.AutoCoderAll', () => {
-        let editor = vscode.window.activeTextEditor!;
-        Utils.parseClasses(editor)
-            .then(javaClass => {
-                if (javaClass.getClassMode() === mode.builder) {
-                    vscode.window.showWarningMessage('this java bean is under builder mode, not support generate all, you can delete code except fields.');
-                } else if (javaClass.getClassMode() === mode.notSupport) {
-                    vscode.window.showErrorMessage('not support,please file an issue.');
-                } else {
-                    let snippet = '';
-                    snippet += addEmptyConstructor(javaClass);
-                    snippet += addToString(javaClass);
-                    snippet += addBuilder(javaClass);
-                    snippet += addSetterGetter(javaClass);
-                    if (snippet !== '' && delSnippet(editor, javaClass, "toString")) {
-                        addSnippet(snippet, editor, javaClass);
-                    }
-                }
-            }).catch(err => {
-                console.log(err);
-            });
-
-    });
+    // let setAndGet = vscode.commands.registerCommand('extension.AutoCoderSetAndGet', () => {
+    //     // The code you place here will be executed every time your command is executed
+    //     let editor = vscode.window.activeTextEditor!;
+    //     Utils.parseClasses(editor)
+    //         .then(javaClass => {
+    //             // if (javaClass.getClassMode() === mode.builder) {
+    //             //     vscode.window.showWarningMessage('this java bean is under builder mode, not support generate setter and getter, you can delete code except fields.');
+    //             // } else if (javaClass.getClassMode() === mode.notSupport) {
+    //             //     vscode.window.showErrorMessage('not support,please file an issue.');
+    //             // } else {
+    //             let snippet = '';
+    //             snippet += addSetterGetter(javaClass);
+    //             if (snippet !== '' && delSnippet(editor, javaClass)) {
+    //                 addSnippet(snippet, editor, javaClass);
+    //             }
+    //             // }
+    //         }).catch(err => {
+    //             console.log(err);
+    //         });
+    // });
 
     let builder = vscode.commands.registerCommand('extension.AutoCoderBuilder', () => {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
-                if (javaClass.getClassMode() === mode.all || javaClass.getClassMode() === mode.setget) {
-                    vscode.window.showWarningMessage(`there are set,get,or toString methods in ${javaClass.getClassName()} class,you can delete code except fields.`);
-                } else if (javaClass.getClassMode() === mode.notSupport) {
-                    vscode.window.showErrorMessage('not support,please file an issue.');
-                } else {
-                    let snippet = '';
-                    snippet += addToString(javaClass);
-                    snippet += addBuilder(javaClass);
-                    if (snippet !== '' && delSnippet(editor, javaClass, "builder")) {
-                        addSnippet(snippet, editor, javaClass);
-                    }
+                let snippet = '';
+                snippet += addEmptyConstructor(javaClass);
+                snippet += addToString(javaClass);
+                snippet += addBuilder(javaClass);
+                snippet += addSetterGetter(javaClass);
+                if (snippet !== '' && delSnippet(editor, javaClass)) {
+                    addSnippet(snippet, editor, javaClass);
                 }
             }).catch(err => {
                 console.log(err);
             });
+
     });
-    context.subscriptions.push(setAndGet);
-    context.subscriptions.push(all);
+
+    // let builder = vscode.commands.registerCommand('extension.AutoCoderBuilder', () => {
+    //     let editor = vscode.window.activeTextEditor!;
+    //     Utils.parseClasses(editor)
+    //         .then(javaClass => {
+    //             // if (javaClass.getClassMode() === mode.all || javaClass.getClassMode() === mode.setget) {
+    //             //     vscode.window.showWarningMessage(`there are set,get,or toString methods in ${javaClass.getClassName()} class,you can delete code except fields.`);
+    //             // } else if (javaClass.getClassMode() === mode.notSupport) {
+    //             //     vscode.window.showErrorMessage('not support,please file an issue.');
+    //             // } else {
+    //             let snippet = '';
+    //             snippet += addBuilder(javaClass);
+    //             if (snippet !== '' && delSnippet(editor, javaClass)) {
+    //                 addSnippet(snippet, editor, javaClass);
+    //             }
+    //             // }
+    //         }).catch(err => {
+    //             console.log(err);
+    //         });
+    // });
+    // context.subscriptions.push(setAndGet);
+    // context.subscriptions.push(all);
     context.subscriptions.push(builder);
 }
 
@@ -126,26 +119,40 @@ function getInsertPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
  * @param javaClass 
  * @param delFuncName 
  */
-function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass, delFuncName: string): boolean {
-    if (javaClass.getClassMode() === mode.init || javaClass.getClassMode() === mode.notSupport) {
-        return true;
-    }
-    let start = getInsertPos(javaClass, editor);
+function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass): boolean {
+    // if (javaClass.getClassMode() === mode.init || javaClass.getClassMode() === mode.notSupport) {
+    //     return true;
+    // }
     let text = editor.document.getText();
     let lines = text.split('\n');
-    let end = lines.length - 1;
     let classPos = getClassPos(javaClass.getClassName(), lines);
     if (classPos !== -1) {
-        if (start > 0) {
+        let start = getInsertPos(javaClass, editor);
+        let patEnd = new RegExp("(\t| )*\}(\t| )*");
+        let end = lines.length - 2;
+        for (let i = lines.length - 1; i >= 0; i--) {
+            if (lines[i].search(patEnd) !== -1) {
+                // console.log('*********' + lines[i]);
+                end = i;
+                break;
+            }
+        }
+        console.log(start + ',' + end);
+        if (start > 0 && end > start) {
             editor.edit(editBuilder => {
                 editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
             });
+            return true;
+        } else if (start > 0 && start === end) {
+            return true;
+        } else {
+            vscode.window.showErrorMessage('delete snippet error, start position or end position is not found.');
+            return false;
         }
     } else {
         vscode.window.showErrorMessage('delete snippet error, can not find class position,please file an issue.');
         return false;
     }
-    return true;
 }
 /**
  * 
@@ -191,23 +198,23 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
     javaClass.getFields().forEach(field => {
         //public void setXxx(String value)
         if (addSet && !field.isFinalField()) {
-            if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
+            // if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
+            ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
 {\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}\n`;
-            }
+            // }
         }
         //if type is boolean, get method is isXxx()
         if (field.isPriBool()) {
             //if isXxx() is not exist
-            if (javaClass.getMethods().indexOf(`is${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `\n${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
+            // if (javaClass.getMethods().indexOf(`is${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
+            ret += `\n${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
-            }
+            // }
         } else {
-            if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `\n${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
+            // if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
+            ret += `\n${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
-            }
+            // }
         }
     });
     return ret;
@@ -261,7 +268,7 @@ ${indent()}}\n`;
 
 function addEmptyConstructor(javaClass: JavaClass): string {
     let ret = '';
-    ret += `\n\n${indent()}public ${javaClass.getClassName()}() {}`;
+    ret += `\n${indent()}public ${javaClass.getClassName()}() {}\n`;
     return ret;
 }
 // this method is called when your extension is deactivated
