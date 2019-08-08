@@ -225,7 +225,7 @@ function indent(): string {
             return '\t';
         } else {
             if (vscode.workspace.getConfiguration('autocoder').has('space')) {
-                let space = vscode.workspace.getConfiguration('autocoder').get('space')!;
+                let space = Number(vscode.workspace.getConfiguration('autocoder').get('space')!);
                 let ret = '';
                 for (let i = 0; i < space; i++) {
                     ret += ' ';
@@ -235,7 +235,7 @@ function indent(): string {
             return '    ';
         }
     } else {
-        return '\t';
+        return '    ';
     }
 }
 
@@ -250,7 +250,7 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
         //public void setXxx(String value)
         if (addSet && !field.isFinalField()) {
             if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
+                ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
 {\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}\n`;
             }
         }
@@ -258,12 +258,12 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
         if (field.isPriBool()) {
             //if isXxx() is not exist
             if (javaClass.getMethods().indexOf(`is${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
+                ret += `\n${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             }
         } else {
             if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
+                ret += `\n${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             }
         }
@@ -276,7 +276,7 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
  */
 function addToString(javaClass: JavaClass): string {
     let ret = '';
-    ret = `${indent()}public String toString() {\n${indent()}${indent()}return "{" +`;
+    ret = `\n${indent()}@Override\n${indent()}public String toString() {\n${indent()}${indent()}return "{" +`;
 
     javaClass.getFields().forEach(field => {
         if (field.getFieldType() === "String") {
@@ -299,18 +299,18 @@ function addToString(javaClass: JavaClass): string {
  */
 function addBuilder(javaClass: JavaClass): string {
     let ret = '';
-    ret += `${indent()}public static class Builder {\n\
+    ret += `\n${indent()}public static class Builder {\n\
 ${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaClass.getClassName()}();\n`;
 
     javaClass.getFields().forEach(field => {
         if (!field.isFinalField()) {
-            ret += `${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
+            ret += `\n${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
 ${indent()}${indent()}${indent()}buildObj.${field.getFieldName()} = ${field.getFieldName()};\n\
 ${indent()}${indent()}${indent()}return this;\n\
 ${indent()}${indent()}}\n`;
         }
     });
-    ret += `${indent()}${indent()}public ${javaClass.getClassName()} build() {\n\
+    ret += `\n${indent()}${indent()}public ${javaClass.getClassName()} build() {\n\
 ${indent()}${indent()}${indent()}return buildObj;\n\
 ${indent()}${indent()}}\n\
 ${indent()}}\n`;
