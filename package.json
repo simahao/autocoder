@@ -1,16 +1,13 @@
 {
   "name": "autocoder",
   "displayName": "AutoCoder",
-  "description": "builder getter setter toString",
-  "version": "0.0.2",
+  "description": "builder",
+  "version": "0.0.3",
   "publisher": "simahao",
   "license": "MIT",
   "icon": "images/icon.png",
   "keywords": [
     "java",
-    "setter",
-    "getter",
-    "toString",
     "builder"
   ],
   "engines": {
@@ -24,21 +21,11 @@
     "Snippets"
   ],
   "activationEvents": [
-    "onCommand:extension.AutoCoderAll",
-    "onCommand:extension.AutoCoderSetAndGet",
     "onCommand:extension.AutoCoderBuilder"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "extension.AutoCoderAll",
-        "title": "AutoCoder: Generate All"
-      },
-      {
-        "command": "extension.AutoCoderSetAndGet",
-        "title": "AutoCoder: Generate Setter And Getter"
-      },
       {
         "command": "extension.AutoCoderBuilder",
         "title": "AutoCoder: Generate Builder"
@@ -47,19 +34,9 @@
     "menus": {
       "editor/context": [
         {
-          "command": "extension.AutoCoderAll",
-          "when": "editorLangId == java",
-          "group": "autocoder@1"
-        },
-        {
-          "command": "extension.AutoCoderSetAndGet",
-          "when": "editorLangId == java",
-          "group": "autocoder@2"
-        },
-        {
           "command": "extension.AutoCoderBuilder",
           "when": "editorLangId == java",
-          "group": "autocoder@3"
+          "group": "autocoder@1"
         }
       ]
     },

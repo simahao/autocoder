@@ -1,38 +1,34 @@
 <h2 align="center"><img src="https://raw.githubusercontent.com/simahao/autocoder/master/images/icon.png" height="128"><br>AutoCoder</h2>
-<p align="center"><strong>AutoCoder can generate setter,getter or builder code for java</strong></p>
+<p align="center"><strong>AutoCoder can generate builder pattern code for java</strong></p>
 
-- [🌴Usage](#%F0%9F%8C%B4usage)
-- [💮Features](#%F0%9F%92%AEfeatures)
-- [⚙️Settings](#%E2%9A%99%EF%B8%8Fsettings)
-- [🤣Restrictions](#%F0%9F%A4%A3restrictions)
-- [🐛Known Issues](#%F0%9F%90%9Bknown-issues)
+- [đ´Usage](#%c4%91%c2%9f%c2%8c%c2%b4usage)
+- [đŽFeatures](#%c4%91%c2%9f%c2%92%c5%bdfeatures)
+- [âď¸Settings](#%c3%a2%c2%9a%c2%99%c4%8f%c2%b8%c2%8fsettings)
+- [đ¤ŁRestrictions](#%c4%91%c2%9f%c2%a4%c5%81restrictions)
+- [đKnown Issues](#%c4%91%c2%9f%c2%90%c2%9bknown-issues)
 
 
-## 🌴Usage
+## đ´Usage
 ![How to use](images/usages.gif)
 
-## 💮Features
-- Generate All command: autocoder generate setter,getter and toString method for java bean.
-- Generate Setter And Getter command: autocoder generate setter and getter method for java bean.
-- Generate Builder command: autocoder generate builder code for java bean.
+## đŽFeatures
+- Generate Builder command: autocoder generate builder pattern code for java bean.
 - Menu: if editorFocus is java file,right click mouse,you can run generate command.
 - Command: you can input autocoder keyword for triggering generate command.
-- Interesting feature: after run generate command,you can add new fields after the last field of java file, then you can run same generate command again.
+- Interesting feature: after run generate command,you can add new fields , then run again.
 
-## ⚙️Settings
+## âď¸Settings
 autocoder is so easy, only two settings you should take care.
 
 | Setting          | Description                                             | Type    | Default Value |
 | ---------------- | ------------------------------------------------------- | ------- | ------------- |
-| autocoder.indent | indent with tab or space                                | String  | tab           |
+| autocoder.indent | indent with tab or space                                | String  | space         |
 | autocoder.space  | if autocoder.indent=space, you can choose 2\|4\|8 space | Integer | 4             |
 
-## 🤣Restrictions
-- After run Generate Builder command, you cann't run Generate All or Generate Setter and Getter again.You can delete code except java fields, run Generate All or Generate Setter and Getter command again.
-- After run Generate All or Generate Setter and Getter command, you cann't run Generate Builder command.You can delete code except java fields, run Generate Builder command again. 
-- regenerate code will delete some code,you should save before running regenerate.
+## đ¤ŁRestrictions
+- regenerate code will delete some code that you added,you should save before running regenerate.
 
-## 🐛Known Issues
+## đKnown Issues
 please file issue at [github](https://github.com/simahao/autocoder/issues)
 
 **Enjoy!**

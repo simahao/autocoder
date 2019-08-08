@@ -1,6 +1,6 @@
 import { parse } from 'java-ast';
 import * as vscode from 'vscode';
-import { Field, JavaClass, mode } from './javaClass';
+import { Field, JavaClass } from './javaClass';
 export class Utils {
     public static lowerFirstChar(field: string): string {
         return field.charAt(0).toLowerCase() + field.slice(1);
@@ -19,27 +19,18 @@ export class Utils {
                     // let hasConstructor: boolean = false;
                     let methods: string[] = [];
                     let fields: Field[] = []; 
-                    let classMode: number = mode.notSupport;
+                    // let classMode: number = mode.notSupport;
                     try {
                         className = type.classDeclaration()!.IDENTIFIER()!.text;
                         type.classDeclaration()!.classBody()!.classBodyDeclaration().forEach(classBodyDeclaration => {
-                            // try {
-                            //     if (classBodyDeclaration
-                            //         .memberDeclaration()!
-                            //         .constructorDeclaration()!
-                            //         .formalParameters()!
-                            //         .formalParameterList() === undefined) {
-                            //             // hasConstructor = true;
-                            //         }
-                            // } catch(err) {}
                             try {
                                 if (classBodyDeclaration
                                     .memberDeclaration()!
                                     .classDeclaration() !== undefined) {
-                                        let childClass = classBodyDeclaration.memberDeclaration()!.classDeclaration()!.IDENTIFIER()!.text;
-                                        if (classMode === mode.notSupport && childClass.search(/^Builder$/) !== -1) {
-                                            classMode = mode.builder;
-                                        }
+                                        // let childClass = classBodyDeclaration.memberDeclaration()!.classDeclaration()!.IDENTIFIER()!.text;
+                                        // if (classMode === mode.notSupport && childClass.search(/^Builder$/) !== -1) {
+                                        //     classMode = mode.builder;
+                                        // }
                                     }
                             } catch(err) {}
                             try {
@@ -94,21 +85,22 @@ export class Utils {
                         console.log(err);
                     }
                     //if mode is not builder, program need judge
-                    if (classMode === mode.notSupport) {
-                        if (fields.length > 0 && methods.length === 0) {
-                            classMode = mode.init;
-                        } else if (methods.some(method => {
-                            return (method.search(/^toString$/) !== -1 ? true : false && method.indexOf("set") !== -1 ? true : false);
-                        })) {
-                            classMode = mode.all;
-                        } else if (methods.some(method => {
-                            return (method.search(/^toString$/) === -1 ? true : false && method.indexOf("set") !== -1 ? true : false);
-                        })) {
-                            classMode = mode.setget;
-                        }
-                    }
-                    console.log(className + ":" + classMode);
-                    classes.push(new JavaClass(className, fields, methods, classMode));
+                    // if (classMode === mode.notSupport) {
+                    //     if (fields.length > 0 && methods.length === 0) {
+                    //         classMode = mode.init;
+                    //     } else if (methods.some(method => {
+                    //         return (method.search(/^toString$/) !== -1 ? true : false && method.indexOf("set") !== -1 ? true : false);
+                    //     })) {
+                    //         classMode = mode.all;
+                    //     } else if (methods.some(method => {
+                    //         return (method.search(/^toString$/) === -1 ? true : false && method.indexOf("set") !== -1 ? true : false);
+                    //     })) {
+                    //         classMode = mode.setget;
+                    //     }
+                    // }
+                    // console.log(className + ":" + classMode);
+                    // classes.push(new JavaClass(className, fields, methods, classMode));
+                    classes.push(new JavaClass(className, fields, methods));
                 });
             } catch(err) {
                 console.log('parse java class error!');

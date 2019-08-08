@@ -9,12 +9,12 @@ export class JavaClass {
     private className: string;
     private fields: Field[];
     private methods: string[];
-    private classMode: number;
-    constructor(className: string, fields: Field[], methods: string[], classMode: number) {
+    // private classMode: number;
+    constructor(className: string, fields: Field[], methods: string[]) {
         this.className = className;
         this.methods = methods;
         this.fields = fields;
-        this.classMode = classMode;
+        // this.classMode = classMode;
     } 
     setClassName(value: string) {
         this.className = value;
@@ -34,9 +34,9 @@ export class JavaClass {
     getMethods() {
         return this.methods;
     }
-    getClassMode(): number {
-        return this.classMode;
-    }
+    // getClassMode(): number {
+    //     return this.classMode;
+    // }
 }
 export class Field {
     private fieldType: string;
