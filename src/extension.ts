@@ -42,7 +42,9 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage('not support,please file an issue.');
                 } else {
                     let snippet = '';
+                    snippet += addEmptyConstructor(javaClass);
                     snippet += addToString(javaClass);
+                    snippet += addBuilder(javaClass);
                     snippet += addSetterGetter(javaClass);
                     if (snippet !== '' && delSnippet(editor, javaClass, "toString")) {
                         addSnippet(snippet, editor, javaClass);
@@ -66,7 +68,6 @@ export function activate(context: vscode.ExtensionContext) {
                     let snippet = '';
                     snippet += addToString(javaClass);
                     snippet += addBuilder(javaClass);
-                    snippet += addSetterGetter(javaClass, false);
                     if (snippet !== '' && delSnippet(editor, javaClass, "builder")) {
                         addSnippet(snippet, editor, javaClass);
                     }
@@ -129,79 +130,20 @@ function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass, delFuncName
     if (javaClass.getClassMode() === mode.init || javaClass.getClassMode() === mode.notSupport) {
         return true;
     }
+    let start = getInsertPos(javaClass, editor);
     let text = editor.document.getText();
     let lines = text.split('\n');
-    let patStart1 = new RegExp(/^(\t| )*public(\t| )+String(\t| )+toString/);
-    let patEnd: RegExp;
-    let patComment = RegExp(/(\/\*{1,2}[\s\S]*?\*\/|\/\/[\s\S]*?)/);
-    let start: number = 0;
-    let end: number = 0;
+    let end = lines.length - 1;
     let classPos = getClassPos(javaClass.getClassName(), lines);
-            
     if (classPos !== -1) {
-        if (delFuncName !== undefined && delFuncName === "toString") {
-            patEnd = new RegExp(/^(\t| )*}/);           
-            for (let i = classPos; i < lines.length; i++) {
-                if (lines[i].search(patComment) !== -1) {
-                    continue;
-                }
-                if (start === 0) {
-                    if (lines[i].search(patStart1) !== -1) {
-                        start = i;
-                        continue;
-                    }
-                } else {
-                    if (lines[i].search(patEnd) !== -1) {
-                        end = i + 1;
-                        break;
-                    }
-                }
-            }
-        } else if (delFuncName !== undefined && delFuncName === "builder") {
-            let stack: string[] = [];
-            let patStart2 = new RegExp(/^(\t| )*public static class Builder/);
-            let findBuilder = false;
-            for (let i = classPos; i < lines.length; i++) {
-                if (lines[i].search(patComment) !== -1) {
-                    continue;
-                }
-                if (start === 0) {
-                    //find toString
-                    if (lines[i].search(patStart1) !== -1) {
-                        start = i;
-                        continue;
-                    }
-                } else {
-                    if (!findBuilder) {
-                        if (lines[i].search(patStart2) === -1) {
-                            continue;
-                        } else {
-                            findBuilder = true;
-                            stack.push("{");
-                        }
-                    } else {
-                        if (lines[i].indexOf("{") !== -1) {
-                            stack.push("{");
-                        } else if (lines[i].indexOf("}") !== -1) {
-                            stack.pop();
-                        }
-                        if (stack.length === 0) {
-                            end = i + 1;
-                            break;
-                        }
-                    }
-                }
-            }
+        if (start > 0) {
+            editor.edit(editBuilder => {
+                editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
+            });
         }
     } else {
         vscode.window.showErrorMessage('delete snippet error, can not find class position,please file an issue.');
         return false;
-        // return Promise.reject('delete snippet error!');        
-    }
-    if (start > 0) {
-        editor.edit(editBuilder => {
-            editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
-        });
     }
     return true;
 }
@@ -225,7 +167,7 @@ function indent(): string {
             return '\t';
         } else {
             if (vscode.workspace.getConfiguration('autocoder').has('space')) {
-                let space = vscode.workspace.getConfiguration('autocoder').get('space')!;
+                let space = Number(vscode.workspace.getConfiguration('autocoder').get('space')!);
                 let ret = '';
                 for (let i = 0; i < space; i++) {
                     ret += ' ';
@@ -235,7 +177,7 @@ function indent(): string {
             return '    ';
         }
     } else {
-        return '\t';
+        return '    ';
     }
 }
 
@@ -250,7 +192,7 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
         //public void setXxx(String value)
         if (addSet && !field.isFinalField()) {
             if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
+                ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
 {\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}\n`;
             }
         }
@@ -258,12 +200,12 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
         if (field.isPriBool()) {
             //if isXxx() is not exist
             if (javaClass.getMethods().indexOf(`is${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
+                ret += `\n${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             }
         } else {
             if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-                ret += `${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
+                ret += `\n${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             }
         }
@@ -276,7 +218,7 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
  */
 function addToString(javaClass: JavaClass): string {
     let ret = '';
-    ret = `${indent()}public String toString() {\n${indent()}${indent()}return "{" +`;
+    ret = `\n${indent()}@Override\n${indent()}public String toString() {\n${indent()}${indent()}return "{" +`;
 
     javaClass.getFields().forEach(field => {
         if (field.getFieldType() === "String") {
@@ -299,21 +241,27 @@ function addToString(javaClass: JavaClass): string {
  */
 function addBuilder(javaClass: JavaClass): string {
     let ret = '';
-    ret += `${indent()}public static class Builder {\n\
+    ret += `\n${indent()}public static class Builder {\n\
 ${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaClass.getClassName()}();\n`;
 
     javaClass.getFields().forEach(field => {
         if (!field.isFinalField()) {
-            ret += `${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
+            ret += `\n${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
 ${indent()}${indent()}${indent()}buildObj.${field.getFieldName()} = ${field.getFieldName()};\n\
 ${indent()}${indent()}${indent()}return this;\n\
 ${indent()}${indent()}}\n`;
         }
     });
-    ret += `${indent()}${indent()}public ${javaClass.getClassName()} build() {\n\
+    ret += `\n${indent()}${indent()}public ${javaClass.getClassName()} build() {\n\
 ${indent()}${indent()}${indent()}return buildObj;\n\
 ${indent()}${indent()}}\n\
 ${indent()}}\n`;
+    return ret;
+}
+
+function addEmptyConstructor(javaClass: JavaClass): string {
+    let ret = '';
+    ret += `\n\n${indent()}public ${javaClass.getClassName()}() {}`;
     return ret;
 }
 // this method is called when your extension is deactivated

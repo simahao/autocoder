@@ -68,7 +68,7 @@
       "properties": {
         "autocoder.indent": {
           "type": "string",
-          "default": "tab",
+          "default": "space",
           "enum": [
             "tab",
             "space"
