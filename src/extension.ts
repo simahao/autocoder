@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
  * @param lines string[] 
  */
 function getClassPos(javaClass: string, lines: string[]): number {
-    let patClass = new RegExp("^(\t| )*.*".concat(javaClass).concat("(\t| )*{"));
+    let patClass = new RegExp("^(\t| )*.*".concat(javaClass).concat(".*{"));
     for (let i = 0; i < lines.length; i++) {
         if (lines[i].search(patClass) !== -1) {
             return i;
@@ -119,6 +119,7 @@ function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass): boolean {
     // }
     let text = editor.document.getText();
     let lines = text.split('\n');
+    console.log(javaClass.getClassName());
     let classPos = getClassPos(javaClass.getClassName(), lines);
     if (classPos !== -1) {
         let start = getInsertPos(javaClass, editor);
@@ -131,7 +132,7 @@ function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass): boolean {
                 break;
             }
         }
-        // console.log(start + ',' + end);
+        console.log(start + ',' + end);
         if (start > 0 && end > start) {
             editor.edit(editBuilder => {
                 editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));
