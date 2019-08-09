@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     //         });
     // });
 
-    let builder = vscode.commands.registerCommand('extension.AutoCoderBuilder', () => {
+    let all = vscode.commands.registerCommand('extension.AutoCoderAll', () => {
         let editor = vscode.window.activeTextEditor!;
         Utils.parseClasses(editor)
             .then(javaClass => {
@@ -50,27 +50,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     });
 
-    // let builder = vscode.commands.registerCommand('extension.AutoCoderBuilder', () => {
-    //     let editor = vscode.window.activeTextEditor!;
-    //     Utils.parseClasses(editor)
-    //         .then(javaClass => {
-    //             // if (javaClass.getClassMode() === mode.all || javaClass.getClassMode() === mode.setget) {
-    //             //     vscode.window.showWarningMessage(`there are set,get,or toString methods in ${javaClass.getClassName()} class,you can delete code except fields.`);
-    //             // } else if (javaClass.getClassMode() === mode.notSupport) {
-    //             //     vscode.window.showErrorMessage('not support,please file an issue.');
-    //             // } else {
-    //             let snippet = '';
-    //             snippet += addBuilder(javaClass);
-    //             if (snippet !== '' && delSnippet(editor, javaClass)) {
-    //                 addSnippet(snippet, editor, javaClass);
-    //             }
-    //             // }
-    //         }).catch(err => {
-    //             console.log(err);
-    //         });
-    // });
+    let builder = vscode.commands.registerCommand('extension.AutoCoderBuilder', () => {
+        let editor = vscode.window.activeTextEditor!;
+        Utils.parseClasses(editor)
+            .then(javaClass => {
+                let snippet = '';
+                snippet += addBuilder(javaClass);
+                if (snippet !== '' && delSnippet(editor, javaClass)) {
+                    addSnippet(snippet, editor, javaClass);
+                }
+            }).catch(err => {
+                console.log(err);
+            });
+    });
     // context.subscriptions.push(setAndGet);
-    // context.subscriptions.push(all);
+    context.subscriptions.push(all);
     context.subscriptions.push(builder);
 }
 
@@ -137,7 +131,7 @@ function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass): boolean {
                 break;
             }
         }
-        console.log(start + ',' + end);
+        // console.log(start + ',' + end);
         if (start > 0 && end > start) {
             editor.edit(editBuilder => {
                 editBuilder.delete(new vscode.Range(new vscode.Position(start, 0), new vscode.Position(end, 0)));

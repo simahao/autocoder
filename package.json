@@ -21,7 +21,8 @@
     "Snippets"
   ],
   "activationEvents": [
-    "onCommand:extension.AutoCoderBuilder"
+    "onCommand:extension.AutoCoderBuilder",
+    "onCommand:extension.AutoCoderAll"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -29,6 +30,10 @@
       {
         "command": "extension.AutoCoderBuilder",
         "title": "AutoCoder: Generate Builder"
+      },
+      {
+        "command": "extension.AutoCoderAll",
+        "title": "AutoCoder: Generate All"
       }
     ],
     "menus": {
@@ -37,6 +42,11 @@
           "command": "extension.AutoCoderBuilder",
           "when": "editorLangId == java",
           "group": "autocoder@1"
+        },
+        {
+          "command": "extension.AutoCoderAll",
+          "when": "editorLangId == java",
+          "group": "autocoder@2"
         }
       ]
     },
