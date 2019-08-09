@@ -1,11 +1,14 @@
 # Change Log
 
+## [v0.0.5](https://github.com/simahao/autocoder/tree/v0.0.5) (2019-08-09)
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.4...v0.0.5)
+
+**Fixed Bugs:**
+
+- generate code bug [\#3](https://github.com/simahao/autocoder/issues/3)
+
 ## [v0.0.4](https://github.com/simahao/autocoder/tree/v0.0.4) (2019-08-08)
 [Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.3...v0.0.4)
-
-- Remove 'Generate Setter and Getter' command
-- Retain only builder pattern when running 'Generate Builder' command
-- Add setter method and empty constructor when running 'Generate All' command
 
 ## [v0.0.3](https://github.com/simahao/autocoder/tree/v0.0.3) (2019-08-08)
 [Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.2...v0.0.3)
