@@ -1,3 +1,33 @@
+# Change Log
+
+## [v0.0.5](https://github.com/simahao/autocoder/tree/v0.0.5) (2019-08-09)
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.4...v0.0.5)
+
+**Fixed Bugs:**
+
+- generate code bug [\#3](https://github.com/simahao/autocoder/issues/3)
+
+## [v0.0.4](https://github.com/simahao/autocoder/tree/v0.0.4) (2019-08-08)
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.3...v0.0.4)
+
+- Remove 'Generate Setter and Getter' command
+- Retain only builder pattern when running 'Generate Builder' command
+- Add setter method and empty constructor when running 'Generate All' command
+
+## [v0.0.3](https://github.com/simahao/autocoder/tree/v0.0.3) (2019-08-08)
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.2...v0.0.3)
+
+**Enhancements:**
+
+- toString should add @override tag and use blank replace tab [\#2](https://github.com/simahao/autocoder/issues/2)
+
+## [v0.0.2](https://github.com/simahao/autocoder/tree/v0.0.2) (2019-01-17)
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.1...v0.0.2)
+
+**Fixed Bugs:**
+
+- format of readme in vscode is wrong [\#1](https://github.com/simahao/autocoder/issues/1)
+
 ## [v0.0.1](https://github.com/simahao/autocoder/releases/tag/v0.0.1) (2019-01-16)
 ### features
 - Generate All
