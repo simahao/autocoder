@@ -82,6 +82,7 @@ function getClassPos(javaClass: string, lines: string[]): number {
     }
     return -1;
 }
+
 /**
  * find position for insert snippet.
  *  
@@ -106,6 +107,7 @@ function getInsertPos(javaClass: JavaClass, editor: vscode.TextEditor): number {
     }
     return lineNum + 1;
 }
+
 /**
  * delete toString under all and builder mode.
  * 
@@ -149,6 +151,7 @@ function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass): boolean {
         return false;
     }
 }
+
 /**
  * 
  * @param snippet 
@@ -159,6 +162,7 @@ function delSnippet(editor: vscode.TextEditor, javaClass: JavaClass): boolean {
 function addSnippet(snippet: string, editor: vscode.TextEditor, javaClass: JavaClass, delFuncName?: string): void {
     editor.insertSnippet(new vscode.SnippetString(snippet), new vscode.Position(getInsertPos(javaClass, editor), 0));
 }
+
 /**
  * @returns tab or space
  */
@@ -194,7 +198,7 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
         //public void setXxx(String value)
         if (addSet && !field.isFinalField()) {
             // if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-            ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${field.getFieldType()} ${field.getFieldName()}) \
+            ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${recoveryCheckstyle(field.getFieldType())} ${field.getFieldName()}) \
 {\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}\n`;
             // }
         }
@@ -207,13 +211,14 @@ function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
             // }
         } else {
             // if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
-            ret += `\n${indent()}public ${field.getFieldType()} get${Utils.upperFirstChar(field.getFieldName())}() \
+            ret += `\n${indent()}public ${recoveryCheckstyle(field.getFieldType())} get${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
             // }
         }
     });
     return ret;
 }
+
 /**
  * 
  * @param javaClass 
@@ -237,6 +242,7 @@ function addToString(javaClass: JavaClass): string {
     //replace first ","
     return ret.replace(',', '');
 }
+
 /**
  * 
  * @param javaClass 
@@ -248,7 +254,7 @@ ${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaC
 
     javaClass.getFields().forEach(field => {
         if (!field.isFinalField()) {
-            ret += `\n${indent()}${indent()}public Builder ${field.getFieldName()}(${field.getFieldType()} ${field.getFieldName()}) {\n\
+            ret += `\n${indent()}${indent()}public Builder ${field.getFieldName()}(${recoveryCheckstyle(field.getFieldType())} ${field.getFieldName()}) {\n\
 ${indent()}${indent()}${indent()}buildObj.${field.getFieldName()} = ${field.getFieldName()};\n\
 ${indent()}${indent()}${indent()}return this;\n\
 ${indent()}${indent()}}\n`;
@@ -261,9 +267,26 @@ ${indent()}}\n`;
     return ret;
 }
 
+/**
+ * 
+ * @param javaClass 
+ */
 function addEmptyConstructor(javaClass: JavaClass): string {
     let ret = '';
     ret += `\n${indent()}public ${javaClass.getClassName()}() {}\n`;
+    return ret;
+}
+
+/**
+ * 
+ * @param type 
+ */
+function recoveryCheckstyle(type: string): string {
+    let pat = new RegExp(",[a-zA-Z]");
+    let ret = type;
+    if (type.search(pat) !== -1) {
+        ret = type.replace(",", ", ");
+    }
     return ret;
 }
 // this method is called when your extension is deactivated
