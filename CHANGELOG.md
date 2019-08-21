@@ -1,5 +1,12 @@
 # Change Log
 
+## [v0.0.7](https://github.com/simahao/autocoder/tree/v0.0.7) (2019-08-21)
+[Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.6...v0.0.7)
+
+**Enhancements:**
+
+- javadoc for builder class [\#5](https://github.com/simahao/autocoder/issues/5)
+
 ## [v0.0.6](https://github.com/simahao/autocoder/tree/v0.0.6) (2019-08-20)
 [Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.5...v0.0.6)
 
@@ -7,7 +14,6 @@
 
 - get and set method miss space after comma in field declaration when field type is Map. [\#4](https://github.com/simahao/autocoder/issues/4)
 
-# Change Log
 
 ## [v0.0.5](https://github.com/simahao/autocoder/tree/v0.0.5) (2019-08-09)
 [Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.4...v0.0.5)

@@ -1,4 +1,3 @@
-# Change Log
 
 ## [v0.0.5](https://github.com/simahao/autocoder/tree/v0.0.5) (2019-08-09)
 [Full Changelog](https://github.com/simahao/autocoder/compare/v0.0.4...v0.0.5)
