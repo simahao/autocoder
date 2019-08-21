@@ -195,25 +195,19 @@ function indent(): string {
 function addSetterGetter(javaClass: JavaClass, addSet: boolean = true): string {
     let ret = '';
     javaClass.getFields().forEach(field => {
-        //public void setXxx(String value)
         if (addSet && !field.isFinalField()) {
-            // if (javaClass.getMethods().indexOf(`set${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
+            ret += javadoc(field.getFieldName(), true);
             ret += `\n${indent()}public void set${Utils.upperFirstChar(field.getFieldName())}(${recoveryCheckstyle(field.getFieldType())} ${field.getFieldName()}) \
 {\n${indent()}${indent()}this.${field.getFieldName()} = ${field.getFieldName()};\n${indent()}}\n`;
-            // }
         }
         //if type is boolean, get method is isXxx()
+        ret += javadoc(field.getFieldName(), false);
         if (field.isPriBool()) {
-            //if isXxx() is not exist
-            // if (javaClass.getMethods().indexOf(`is${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
             ret += `\n${indent()}public ${field.getFieldType()} is${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
-            // }
         } else {
-            // if (javaClass.getMethods().indexOf(`get${Utils.upperFirstChar(field.getFieldName())}`) === -1) {
             ret += `\n${indent()}public ${recoveryCheckstyle(field.getFieldType())} get${Utils.upperFirstChar(field.getFieldName())}() \
 {\n${indent()}${indent()}return this.${field.getFieldName()};\n${indent()}}\n`;
-            // }
         }
     });
     return ret;
@@ -249,17 +243,20 @@ function addToString(javaClass: JavaClass): string {
  */
 function addBuilder(javaClass: JavaClass): string {
     let ret = '';
+    ret += `\n${indent()}/**\n${indent()} * Builder for ${javaClass.getClassName()}\n${indent()} */`;
     ret += `\n${indent()}public static class Builder {\n\
 ${indent()}${indent()}private ${javaClass.getClassName()} buildObj = new ${javaClass.getClassName()}();\n`;
 
     javaClass.getFields().forEach(field => {
         if (!field.isFinalField()) {
+            ret += `\n${indent()}${indent()}/**\n${indent()}${indent()} * @param ${field.getFieldName()} to be set\n${indent()}${indent()} * @return ${javaClass.getClassName()}.Builder\n${indent()}${indent()} */`;
             ret += `\n${indent()}${indent()}public Builder ${field.getFieldName()}(${recoveryCheckstyle(field.getFieldType())} ${field.getFieldName()}) {\n\
 ${indent()}${indent()}${indent()}buildObj.${field.getFieldName()} = ${field.getFieldName()};\n\
 ${indent()}${indent()}${indent()}return this;\n\
 ${indent()}${indent()}}\n`;
         }
     });
+    ret += `\n${indent()}${indent()}/**\n${indent()}${indent()} * @return ${javaClass.getClassName()}\n${indent()}${indent()} */`;
     ret += `\n${indent()}${indent()}public ${javaClass.getClassName()} build() {\n\
 ${indent()}${indent()}${indent()}return buildObj;\n\
 ${indent()}${indent()}}\n\
@@ -286,6 +283,16 @@ function recoveryCheckstyle(type: string): string {
     let ret = type;
     if (type.search(pat) !== -1) {
         ret = type.replace(",", ", ");
+    }
+    return ret;
+}
+
+function javadoc(field: string, setter: boolean): string {
+    let ret = '';
+    if (setter) {
+        ret += `\n${indent()}/**\n${indent()} * @param ${field.toString()} to be set\n${indent()} */`;
+    } else {
+        ret += `\n${indent()}/**\n${indent()} * @return ${field.toString()}\n${indent()} */`;
     }
     return ret;
 }
