@@ -1,11 +1,14 @@
+
+[ ![Travis CI Status](https://travis-ci.com/simahao/autocoder.svg?branch=master)](https://travis-ci.com/simahao/autocoder.svg?branch=master)
+
 <h2 align="center"><img src="https://raw.githubusercontent.com/simahao/autocoder/master/images/icon.png" height="128"><br>AutoCoder</h2>
 <p align="center"><strong>AutoCoder can generate builder pattern code for java</strong></p>
 
-- [🌴Usage](#%f0%9f%8c%b4usage)
-- [💮Features](#%f0%9f%92%aefeatures)
-- [⚙️Settings](#%e2%9a%99%ef%b8%8fsettings)
-- [🤣Restrictions](#%f0%9f%a4%a3restrictions)
-- [🐛Known Issues](#%f0%9f%90%9bknown-issues)
+- [🌴Usage](#usage)
+- [💮Features](#features)
+- [⚙️Settings](#️settings)
+- [🤣Restrictions](#restrictions)
+- [🐛Known Issues](#known-issues)
 
 ## 🌴Usage
 
